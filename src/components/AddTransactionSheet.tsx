@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react'
 import { useAccounts, useAddTransaction, useCategories } from '../lib/api'
 import { budgetWarning } from '../lib/budgetCheck'
-import { inputDateToInstant, todayInputValue } from '../lib/date'
+import { dayKey, inputDateToInstant, kyivParts, kyivStart, todayInputValue } from '../lib/date'
 import { accountEmoji, categoryEmoji } from '../lib/icons'
 import { currencySymbol, formatMoney, parseAmount } from '../lib/money'
 import type { AccountWithBalance } from '../lib/types'
@@ -32,6 +32,13 @@ export function AddSheetProvider({ children }: { children: ReactNode }) {
   )
 }
 
+function formatShortDate(key: string): string {
+  const [y, m, d] = key.split('-').map(Number)
+  return new Intl.DateTimeFormat('ru-RU', { timeZone: 'Europe/Kyiv', day: 'numeric', month: 'short' })
+    .format(kyivStart(y, m, d))
+    .replace('.', '')
+}
+
 function Sheet({ initialKind, onClose }: { initialKind: SheetKind; onClose: () => void }) {
   const { data: allAccounts = [] } = useAccounts()
   const { data: categories = [] } = useCategories()
@@ -47,7 +54,12 @@ function Sheet({ initialKind, onClose }: { initialKind: SheetKind; onClose: () =
   const [toAccountId, setToAccountId] = useState<string | null>(null)
   const [categoryId, setCategoryId] = useState<string | null>(null)
   const [note, setNote] = useState('')
-  const [date, setDate] = useState(todayInputValue())
+  const today = useMemo(() => todayInputValue(), [])
+  const yesterday = useMemo(() => {
+    const p = kyivParts(new Date())
+    return dayKey(kyivStart(p.y, p.m, p.d - 1))
+  }, [])
+  const [date, setDate] = useState(today)
   const [error, setError] = useState<string | null>(null)
 
   const account: AccountWithBalance | undefined =
@@ -253,27 +265,36 @@ function Sheet({ initialKind, onClose }: { initialKind: SheetKind; onClose: () =
           </div>
         )}
 
-        <div className="mt-5 grid grid-cols-2 gap-3">
-          <div>
-            <label className="label">Дата</label>
-            <input
-              className="input"
-              type="date"
-              value={date}
-              max={todayInputValue()}
-              onChange={(e) => setDate(e.target.value || todayInputValue())}
-            />
-          </div>
-          <div>
-            <label className="label">Заметка</label>
-            <input
-              className="input"
-              placeholder="Необязательно"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
+        <div className="mt-5">
+          <span className="label">Дата</span>
+          <div className="flex gap-2">
+            <button className="chip" data-active={date === today} onClick={() => setDate(today)}>
+              Сегодня
+            </button>
+            <button className="chip" data-active={date === yesterday} onClick={() => setDate(yesterday)}>
+              Вчера
+            </button>
+            {/* прозрачное системное поле поверх кнопки: тап открывает выбор даты */}
+            <label className="chip relative overflow-hidden" data-active={date !== today && date !== yesterday}>
+              {date !== today && date !== yesterday ? formatShortDate(date) : '📅 Другая'}
+              <input
+                type="date"
+                value={date}
+                max={today}
+                onChange={(e) => setDate(e.target.value || today)}
+                className="absolute inset-0 h-full w-full opacity-0"
+                aria-label="Выбрать дату"
+              />
+            </label>
           </div>
         </div>
+
+        <input
+          className="input mt-4 !py-2.5"
+          placeholder="Заметка (необязательно)"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+        />
 
         {error && <p className="mt-4 text-sm text-danger">{error}</p>}
         {offline && <p className="mt-4 text-sm text-amber-300">Нет сети — сохранить сейчас нельзя.</p>}
