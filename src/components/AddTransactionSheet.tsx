@@ -171,7 +171,9 @@ function Sheet({ initialKind, onClose }: { initialKind: SheetKind; onClose: () =
           <div className="mt-1 flex items-baseline justify-center gap-2">
             <input
               autoFocus
-              className="w-full bg-transparent text-center text-5xl font-bold outline-none placeholder:text-white/20"
+              className={`min-w-0 flex-1 bg-transparent text-center font-bold leading-tight outline-none placeholder:text-white/20 ${
+                amount.length > 9 ? 'text-4xl' : amount.length > 6 ? 'text-5xl' : 'text-6xl'
+              }`}
               inputMode="decimal"
               placeholder="0"
               value={amount}

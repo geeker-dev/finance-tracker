@@ -37,11 +37,14 @@ body {
   overscroll-behavior-y: none;
 }
 
-/* Safari зумит инпуты со шрифтом меньше 16px */
-input,
-select,
-textarea {
-  font-size: 16px;
+/* Safari зумит инпуты со шрифтом меньше 16px.
+   В @layer base, иначе это правило перебивает классы Tailwind (text-5xl и др.) */
+@layer base {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
 }
 
 /* Фоновое свечение в духе референса */
