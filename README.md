@@ -23,9 +23,14 @@
 4. `npm install && npm run dev`
 5. На экране входа нажми «Первый запуск? Создать аккаунт», задай email и пароль. После этого **отключи регистрацию новых пользователей** (Authentication → Sign In / Providers → «Allow new users to sign up»), чтобы никто чужой не мог создать аккаунт.
 
-## Деплой (Cloudflare Pages)
+## Деплой (Vercel)
 
-Build command: `npm run build`, output directory: `dist`, переменные `VITE_SUPABASE_URL` и `VITE_SUPABASE_ANON_KEY` — в настройках проекта. Файл `public/_redirects` уже настроен для SPA.
+1. На vercel.com войди через GitHub → **Add New → Project** → выбери репозиторий `finance-tracker`.
+2. Framework Preset определится как Vite (build `npm run build`, output `dist`).
+3. В **Environment Variables** добавь `VITE_SUPABASE_URL` и `VITE_SUPABASE_ANON_KEY` (те же значения, что в `.env`) и нажми **Deploy**.
+4. `vercel.json` уже настроен: переходы по ссылкам внутри приложения работают, service worker не кэшируется.
+
+Cloudflare Pages тоже подойдёт: build `npm run build`, output `dist`, `public/_redirects` уже есть.
 
 На iPhone: открой сайт в Safari → «Поделиться» → «На экран Домой».
 
