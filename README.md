@@ -17,11 +17,11 @@
 
 ## Запуск
 
-1. Создай проект на [supabase.com](https://supabase.com) и выполни `supabase/migrations/0001_init.sql` в SQL Editor.
-2. **Authentication → Emails → Magic Link** (шаблон): замени ссылку на код — вставь `{{ .Token }}`, например: `Код для входа: {{ .Token }}`.
+1. Создай проект на [supabase.com](https://supabase.com) и выполни `supabase/paste.sql` (или `supabase/migrations/0001_init.sql`) в SQL Editor.
+2. **Authentication → Sign In / Providers → Email**: выключи **Confirm email**, чтобы не зависеть от писем.
 3. Скопируй `.env.example` в `.env` и заполни `VITE_SUPABASE_URL` и `VITE_SUPABASE_ANON_KEY` (Project Settings → API).
 4. `npm install && npm run dev`
-5. Войди по email, один раз введи код. После этого **Authentication → Sign In / Providers → отключи «Allow new users to sign up»**, чтобы никто чужой не мог зарегистрироваться.
+5. На экране входа нажми «Первый запуск? Создать аккаунт», задай email и пароль. После этого **отключи регистрацию новых пользователей** (Authentication → Sign In / Providers → «Allow new users to sign up»), чтобы никто чужой не мог создать аккаунт.
 
 ## Деплой (Cloudflare Pages)
 
