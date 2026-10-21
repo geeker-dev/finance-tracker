@@ -181,6 +181,14 @@ function Sheet({ initialKind, onClose }: { initialKind: SheetKind; onClose: () =
             />
             <span className="text-3xl text-muted">{account ? currencySymbol(account.currency) : ''}</span>
           </div>
+          {(kind === 'expense' || kind === 'transfer') &&
+            account &&
+            account.credit_limit_minor > 0 &&
+            (parseAmount(amount) ?? 0) > account.balance_minor + account.credit_limit_minor && (
+              <div className="mt-2 text-sm text-amber-300">
+                Больше доступного: {formatMoney(account.balance_minor + account.credit_limit_minor, account.currency)}
+              </div>
+            )}
           {kind === 'adjustment' && account && (
             <div className="mt-2 text-sm text-muted">
               Сейчас на счёте: {formatMoney(account.balance_minor, account.currency)}

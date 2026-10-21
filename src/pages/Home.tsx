@@ -85,7 +85,14 @@ export default function Home() {
               <div key={a.id} className="glass w-40 flex-none p-4">
                 <div className="text-2xl">{accountEmoji(a.type)}</div>
                 <div className="mt-2 truncate text-sm text-muted">{a.name}</div>
-                <div className="mt-0.5 truncate font-semibold">{formatMoney(a.balance_minor, a.currency)}</div>
+                <div className={`mt-0.5 truncate font-semibold ${a.balance_minor < 0 ? 'text-danger' : ''}`}>
+                  {formatMoney(a.balance_minor, a.currency)}
+                </div>
+                {a.credit_limit_minor > 0 && (
+                  <div className="mt-1 truncate text-xs text-muted">
+                    Доступно {formatMoney(a.balance_minor + a.credit_limit_minor, a.currency)}
+                  </div>
+                )}
               </div>
             ))}
           </div>

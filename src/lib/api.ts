@@ -34,7 +34,11 @@ export function useAccounts() {
           Number(b.balance_minor),
         ]),
       )
-      return accounts.map((a) => ({ ...a, balance_minor: balances.get(a.id) ?? 0 }))
+      return accounts.map((a) => ({
+        ...a,
+        credit_limit_minor: Number(a.credit_limit_minor ?? 0),
+        balance_minor: balances.get(a.id) ?? 0,
+      }))
     },
   })
 }
@@ -169,14 +173,17 @@ export interface NewAccount {
   currency: Currency
   type: AccountType
   initial_minor: number
+  credit_limit_minor?: number
 }
 
 export function useCreateAccount() {
   const invalidate = useInvalidate()
   return useMutation({
-    mutationFn: async ({ initial_minor, ...acc }: NewAccount) => {
+    mutationFn: async ({ initial_minor, credit_limit_minor, ...acc }: NewAccount) => {
+      // поле лимита отправляем только если оно задано — так создание счёта работает и до миграции 0002
+      const row = credit_limit_minor ? { ...acc, credit_limit_minor } : acc
       const created = check(
-        await supabase.from('accounts').insert(acc).select('id').single(),
+        await supabase.from('accounts').insert(row).select('id').single(),
       ) as { id: string }
       if (initial_minor !== 0) {
         check(
@@ -196,6 +203,17 @@ export function useCreateAccount() {
       return created.id
     },
     onSuccess: () => invalidate('accounts', 'transactions'),
+  })
+}
+
+export function useUpdateAccount() {
+  const invalidate = useInvalidate()
+  return useMutation({
+    mutationFn: async ({ id, ...patch }: { id: string; name: string; credit_limit_minor: number }) => {
+      const res = await supabase.from('accounts').update(patch).eq('id', id)
+      if (res.error) throw new Error(res.error.message)
+    },
+    onSuccess: () => invalidate('accounts'),
   })
 }
 

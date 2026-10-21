@@ -1,14 +1,18 @@
 import { useState, type FormEvent } from 'react'
 import PageHeader from '../components/PageHeader'
 import { useToast } from '../components/Toast'
-import { useAccounts, useArchiveAccount, useCreateAccount } from '../lib/api'
+import { useAccounts, useArchiveAccount, useCreateAccount, useUpdateAccount } from '../lib/api'
 import { ACCOUNT_TYPES, accountEmoji } from '../lib/icons'
 import { formatMoney, parseAmount } from '../lib/money'
-import { CURRENCIES, type AccountType, type Currency } from '../lib/types'
+import { CURRENCIES, type AccountType, type AccountWithBalance, type Currency } from '../lib/types'
+
+// "5000" -> "5000", "5000,5" -> "5000,5": число для поля ввода из копеек
+const toInput = (minor: number) => (minor ? String(minor / 100).replace('.', ',') : '')
 
 export default function Accounts() {
   const { data: accounts = [], isLoading } = useAccounts()
   const create = useCreateAccount()
+  const update = useUpdateAccount()
   const archive = useArchiveAccount()
   const toast = useToast()
 
@@ -18,19 +22,52 @@ export default function Accounts() {
   const [currency, setCurrency] = useState<Currency>('UAH')
   const [type, setType] = useState<AccountType>('card')
   const [initial, setInitial] = useState('')
+  const [limit, setLimit] = useState('')
+
+  const [editing, setEditing] = useState<AccountWithBalance | null>(null)
+  const [editName, setEditName] = useState('')
+  const [editLimit, setEditLimit] = useState('')
 
   async function submit(e: FormEvent) {
     e.preventDefault()
     const initialMinor = initial.trim() === '' ? 0 : parseAmount(initial)
-    if (initialMinor === null) return toast.show('Некорректный начальный остаток', 'error')
+    if (initialMinor === null) return toast.show('Некорректный остаток', 'error')
+    const limitMinor = limit.trim() === '' ? 0 : parseAmount(limit)
+    if (limitMinor === null || limitMinor < 0) return toast.show('Некорректный кредитный лимит', 'error')
     try {
-      await create.mutateAsync({ name: name.trim(), currency, type, initial_minor: initialMinor })
+      await create.mutateAsync({
+        name: name.trim(),
+        currency,
+        type,
+        initial_minor: initialMinor,
+        credit_limit_minor: limitMinor,
+      })
       toast.show('Счёт создан')
       setName('')
       setInitial('')
+      setLimit('')
       setShowForm(false)
     } catch (err) {
       toast.show(err instanceof Error ? err.message : 'Не удалось создать счёт', 'error')
+    }
+  }
+
+  function startEdit(a: AccountWithBalance) {
+    setEditing(a)
+    setEditName(a.name)
+    setEditLimit(toInput(a.credit_limit_minor))
+  }
+
+  async function saveEdit() {
+    if (!editing) return
+    const limitMinor = editLimit.trim() === '' ? 0 : parseAmount(editLimit)
+    if (limitMinor === null || limitMinor < 0) return toast.show('Некорректный кредитный лимит', 'error')
+    if (!editName.trim()) return toast.show('Укажи название', 'error')
+    try {
+      await update.mutateAsync({ id: editing.id, name: editName.trim(), credit_limit_minor: limitMinor })
+      setEditing(null)
+    } catch (err) {
+      toast.show(err instanceof Error ? err.message : 'Не удалось сохранить', 'error')
     }
   }
 
@@ -53,18 +90,57 @@ export default function Accounts() {
         {!isLoading && visible.length === 0 && (
           <p className="text-muted">{showArchived ? 'Архив пуст.' : 'Счетов пока нет.'}</p>
         )}
-        {visible.map((a) => (
-          <div key={a.id} className="row flex items-center gap-3 p-4">
-            <span className="text-2xl">{accountEmoji(a.type)}</span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate font-semibold">{a.name}</span>
-              <span className="block text-sm text-muted">{formatMoney(a.balance_minor, a.currency)}</span>
-            </span>
-            <button className="text-sm text-muted" onClick={() => toggleArchive(a.id, !a.archived)}>
-              {a.archived ? 'Вернуть' : 'В архив'}
-            </button>
-          </div>
-        ))}
+        {visible.map((a) =>
+          editing?.id === a.id ? (
+            <div key={a.id} className="glass space-y-3 p-4">
+              <div>
+                <label className="label">Название</label>
+                <input className="input" value={editName} onChange={(e) => setEditName(e.target.value)} />
+              </div>
+              <div>
+                <label className="label">Кредитный лимит ({a.currency})</label>
+                <input
+                  className="input"
+                  inputMode="decimal"
+                  placeholder="0 — лимита нет"
+                  value={editLimit}
+                  onChange={(e) => setEditLimit(e.target.value)}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <button className="btn btn-ghost" onClick={() => setEditing(null)}>
+                  Отмена
+                </button>
+                <button className="btn btn-lime" onClick={saveEdit} disabled={update.isPending}>
+                  Сохранить
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div key={a.id} className="row p-4">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">{accountEmoji(a.type)}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-semibold">{a.name}</span>
+                  <span className="block text-sm text-muted">
+                    {a.credit_limit_minor > 0 ? 'Свои средства: ' : ''}
+                    {formatMoney(a.balance_minor, a.currency)}
+                  </span>
+                </span>
+                <span className="flex flex-col items-end gap-1 text-sm text-muted">
+                  <button onClick={() => startEdit(a)}>Изменить</button>
+                  <button onClick={() => toggleArchive(a.id, !a.archived)}>{a.archived ? 'Вернуть' : 'В архив'}</button>
+                </span>
+              </div>
+              {a.credit_limit_minor > 0 && (
+                <div className="mt-3 flex justify-between border-t border-line pt-3 text-sm">
+                  <span className="text-muted">Лимит {formatMoney(a.credit_limit_minor, a.currency)}</span>
+                  <span>Доступно {formatMoney(a.balance_minor + a.credit_limit_minor, a.currency)}</span>
+                </div>
+              )}
+            </div>
+          ),
+        )}
       </div>
 
       {!showForm && (
@@ -106,13 +182,24 @@ export default function Accounts() {
             </div>
           </div>
           <div>
-            <label className="label">Текущий остаток</label>
+            <label className="label">Текущий остаток (свои средства)</label>
             <input
               className="input"
               inputMode="decimal"
               placeholder="0"
               value={initial}
               onChange={(e) => setInitial(e.target.value)}
+            />
+            <p className="mt-1 text-xs text-muted">Если уже потратил кредитные деньги, введи сумму со знаком минус.</p>
+          </div>
+          <div>
+            <label className="label">Кредитный лимит (необязательно)</label>
+            <input
+              className="input"
+              inputMode="decimal"
+              placeholder="Например, 50000"
+              value={limit}
+              onChange={(e) => setLimit(e.target.value)}
             />
           </div>
           <div className="grid grid-cols-2 gap-3">

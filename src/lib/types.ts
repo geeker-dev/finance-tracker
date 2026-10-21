@@ -13,6 +13,8 @@ export interface Account {
   color: string | null
   sort_order: number
   archived: boolean
+  /** Кредитный лимит в минимальных единицах, 0 = нет */
+  credit_limit_minor: number
   created_at: string
 }
 
