@@ -135,8 +135,29 @@ export default function Goals() {
                 <input className="input" inputMode="decimal" placeholder="0" value={target} onChange={(e) => setTarget(e.target.value)} />
               </div>
               <div>
-                <label className="label">Срок (необязательно)</label>
-                <input className="input" type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+                <span className="label">Срок (необязательно)</span>
+                <div className="flex gap-2">
+                  {/* прозрачное системное поле поверх блока: тап открывает выбор даты, ширину не ломает */}
+                  <label className="input relative block min-w-0 flex-1 !w-auto overflow-hidden">
+                    <span className={deadline ? '' : 'text-white/40'}>
+                      {deadline
+                        ? deadlineFmt.format(new Date(deadline + 'T12:00:00Z'))
+                        : 'Без срока (нажми, чтобы выбрать)'}
+                    </span>
+                    <input
+                      type="date"
+                      value={deadline}
+                      onChange={(e) => setDeadline(e.target.value)}
+                      className="absolute inset-0 h-full w-full opacity-0"
+                      aria-label="Выбрать срок"
+                    />
+                  </label>
+                  {deadline && (
+                    <button type="button" className="btn btn-ghost !px-4" aria-label="Убрать срок" onClick={() => setDeadline('')}>
+                      ✕
+                    </button>
+                  )}
+                </div>
               </div>
             </>
           )}
