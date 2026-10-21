@@ -51,7 +51,8 @@ create table public.transactions (
   occurred_at      timestamptz not null default now(),
   created_at       timestamptz not null default now(),
 
-  constraint tx_shape check (
+  -- "is true": иначе NULL-сравнения (например, to_amount_minor > 0 при NULL) проходят CHECK
+  constraint tx_shape check ((
     case kind
       when 'income'     then amount_minor > 0 and category_id is not null
                              and to_account_id is null and to_amount_minor is null
@@ -63,7 +64,7 @@ create table public.transactions (
       when 'adjustment' then amount_minor <> 0 and category_id is null
                              and to_account_id is null and to_amount_minor is null
     end
-  )
+  ) is true)
 );
 
 create index transactions_user_time_idx on public.transactions (user_id, occurred_at desc);
