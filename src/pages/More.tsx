@@ -7,6 +7,7 @@ import { exportAllData } from '../lib/exportData'
 const LINKS = [
   { to: '/more/accounts', icon: '💳', title: 'Счета', sub: 'Кошельки, карты, накопления' },
   { to: '/more/budgets', icon: '🎯', title: 'Бюджеты', sub: 'Лимиты по категориям на месяц' },
+  { to: '/more/notifications', icon: '🔔', title: 'Напоминания', sub: 'Вечерний пуш, если нет операций за день' },
   { to: '/more/goals', icon: '🏁', title: 'Цели накоплений', sub: 'Прогресс по счетам накоплений' },
 ]
 

@@ -30,6 +30,8 @@ export default defineConfig({
       },
       workbox: {
         navigateFallback: '/index.html',
+        // обработчики push и клика по уведомлению лежат в public/push-sw.js
+        importScripts: ['push-sw.js'],
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
       },
     }),

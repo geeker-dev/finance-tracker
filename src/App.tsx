@@ -16,6 +16,7 @@ import History from './pages/History'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import More from './pages/More'
+import Notifications from './pages/Notifications'
 import Stats from './pages/Stats'
 
 const queryClient = new QueryClient({
@@ -53,6 +54,7 @@ function Gate() {
           <Route path="more/accounts" element={<Accounts />} />
           <Route path="more/budgets" element={<Budgets />} />
           <Route path="more/goals" element={<Goals />} />
+          <Route path="more/notifications" element={<Notifications />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
