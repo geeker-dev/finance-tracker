@@ -11,11 +11,15 @@ import {
 } from '../lib/api'
 import { formatMonth, monthRange } from '../lib/date'
 import { categoryEmoji } from '../lib/icons'
-import { formatMoney, parseAmount } from '../lib/money'
+import { formatMoneyShort, parseAmount } from '../lib/money'
 import { CURRENCIES, type Currency } from '../lib/types'
 
 export default function Budgets() {
   const month = useMemo(() => monthRange(0), [])
+  const monthTitle = useMemo(() => {
+    const t = formatMonth(month.from)
+    return t.charAt(0).toUpperCase() + t.slice(1)
+  }, [month])
   const prevMonth = useMemo(() => monthRange(-1), [])
   const budgets = useBudgets(month.key)
   const prevBudgets = useBudgets(prevMonth.key)
@@ -82,7 +86,7 @@ export default function Budgets() {
   return (
     <div>
       <PageHeader title="Бюджеты" />
-      <p className="-mt-2 mb-5 text-sm capitalize text-muted">{formatMonth(month.from)}</p>
+      <p className="-mt-2 mb-5 text-sm text-muted">{monthTitle}</p>
 
       {list.length === 0 && !budgets.isLoading && (
         <div className="glass p-5 text-center">
@@ -117,14 +121,14 @@ export default function Budgets() {
                   style={{ width: `${Math.min(100, ratio * 100)}%` }}
                 />
               </div>
-              <div className="mt-2 flex justify-between text-sm">
+              <div className="mt-2 flex justify-between gap-3 whitespace-nowrap text-sm">
                 <span className={over ? 'text-danger' : 'text-muted'}>
-                  {formatMoney(spent, b.currency)} из {formatMoney(b.limit_minor, b.currency)}
+                  {formatMoneyShort(spent, b.currency)} из {formatMoneyShort(b.limit_minor, b.currency)}
                 </span>
                 <span className={over ? 'text-danger' : 'text-muted'}>
                   {over
-                    ? `превышено на ${formatMoney(spent - b.limit_minor, b.currency)}`
-                    : `осталось ${formatMoney(b.limit_minor - spent, b.currency)}`}
+                    ? `превышено на ${formatMoneyShort(spent - b.limit_minor, b.currency)}`
+                    : `осталось ${formatMoneyShort(b.limit_minor - spent, b.currency)}`}
                 </span>
               </div>
             </div>

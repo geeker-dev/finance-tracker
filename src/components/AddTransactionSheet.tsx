@@ -134,7 +134,7 @@ function Sheet({ initialKind, onClose }: { initialKind: SheetKind; onClose: () =
   return (
     <div className="app-bg fixed inset-0 z-50 overflow-y-auto">
       <div
-        className="mx-auto max-w-md px-5 pb-10"
+        className="mx-auto max-w-md px-5"
         style={{ paddingTop: 'calc(var(--safe-top) + 12px)' }}
       >
         <div className="flex items-center justify-between">
@@ -309,13 +309,21 @@ function Sheet({ initialKind, onClose }: { initialKind: SheetKind; onClose: () =
         {error && <p className="mt-4 text-sm text-danger">{error}</p>}
         {offline && <p className="mt-4 text-sm text-amber-300">Нет сети — сохранить сейчас нельзя.</p>}
 
-        <button
-          className="btn btn-lime mt-6 w-full"
-          disabled={add.isPending || offline || accounts.length === 0}
-          onClick={save}
+        <div
+          className="sticky bottom-0 -mx-5 mt-6 px-5 pt-3"
+          style={{
+            paddingBottom: 'calc(var(--safe-bottom) + 12px)',
+            background: 'linear-gradient(to top, #070b14 70%, transparent)',
+          }}
         >
-          {add.isPending ? 'Сохраняем…' : 'Сохранить'}
-        </button>
+          <button
+            className="btn btn-lime w-full"
+            disabled={add.isPending || offline || accounts.length === 0}
+            onClick={save}
+          >
+            {add.isPending ? 'Сохраняем…' : 'Сохранить'}
+          </button>
+        </div>
       </div>
     </div>
   )

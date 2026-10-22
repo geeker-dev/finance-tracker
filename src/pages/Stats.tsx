@@ -137,19 +137,22 @@ export default function Stats() {
         ))}
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        <button className="chip" data-active={kind === 'expense'} onClick={() => setKind('expense')}>
-          Расходы
-        </button>
-        <button className="chip" data-active={kind === 'income'} onClick={() => setKind('income')}>
-          Доходы
-        </button>
-        <span className="w-2" />
-        {(usedCurrencies.length ? usedCurrencies : (['UAH'] as Currency[])).map((c) => (
-          <button key={c} className="chip" data-active={c === currency} onClick={() => setCurrency(c)}>
-            {c}
+      <div className="space-y-2">
+        <div className="flex gap-2">
+          <button className="chip" data-active={kind === 'expense'} onClick={() => setKind('expense')}>
+            Расходы
           </button>
-        ))}
+          <button className="chip" data-active={kind === 'income'} onClick={() => setKind('income')}>
+            Доходы
+          </button>
+        </div>
+        <div className="flex gap-2">
+          {(usedCurrencies.length ? usedCurrencies : (['UAH'] as Currency[])).map((c) => (
+            <button key={c} className="chip" data-active={c === currency} onClick={() => setCurrency(c)}>
+              {c}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="glass p-5">

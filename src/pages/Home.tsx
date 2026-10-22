@@ -3,7 +3,7 @@ import { useAddSheet, type SheetKind } from '../components/AddTransactionSheet'
 import TransactionRow from '../components/TransactionRow'
 import { useAccounts, useCategories, useRecentTransactions } from '../lib/api'
 import { accountEmoji } from '../lib/icons'
-import { formatMoney } from '../lib/money'
+import { formatMoney, formatMoneyShort } from '../lib/money'
 import { CURRENCIES, type Currency } from '../lib/types'
 
 const ACTIONS: { kind: SheetKind; label: string; icon: string }[] = [
@@ -82,7 +82,7 @@ export default function Home() {
           </div>
           <div className="no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5">
             {active.map((a) => (
-              <div key={a.id} className="glass w-40 flex-none p-4">
+              <div key={a.id} className="glass w-44 flex-none p-4">
                 <div className="text-2xl">{accountEmoji(a.type)}</div>
                 <div className="mt-2 truncate text-sm text-muted">{a.name}</div>
                 <div className={`mt-0.5 truncate font-semibold ${a.balance_minor < 0 ? 'text-danger' : ''}`}>
@@ -90,7 +90,7 @@ export default function Home() {
                 </div>
                 {a.credit_limit_minor > 0 && (
                   <div className="mt-1 truncate text-xs text-muted">
-                    Доступно {formatMoney(a.balance_minor + a.credit_limit_minor, a.currency)}
+                    Доступно {formatMoneyShort(a.balance_minor + a.credit_limit_minor, a.currency)}
                   </div>
                 )}
               </div>
